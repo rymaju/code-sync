@@ -4,5 +4,5 @@
 (define build-deps '("scribble-lib" "racket-doc" "rackunit-lib"))
 (define scribblings '(("scribblings/code-sync.scrbl" ())))
 (define pkg-desc "Fast Code Sharing for DrRacket")
-(define version "0.0")
+(define version "0.0.1")
 (define pkg-authors '(jung.ry@northeastern.edu))
