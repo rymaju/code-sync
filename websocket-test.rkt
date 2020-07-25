@@ -10,5 +10,12 @@
 
 
 (define c (connect "banana"))
-(thread (λ () (displayln (sync (ws-recv-evt c)))))
-(ws-send! c "Hello world!")
+(define (queue)
+  (thread (λ () (let [(res (sync (ws-recv-evt c)))]
+                  (when res (displayln res)
+                  (queue))))))
+
+
+;(queue)
+(ws-send! c "This should just work, at least on the recieving end")
+
