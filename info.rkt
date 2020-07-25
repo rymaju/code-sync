@@ -2,7 +2,7 @@
 
 (define drracket-tools '(("tool.rkt")))
 (define drracket-tool-names (list "code-sync"))
-(define drracket-tool-icons '(#f))
+(define drracket-tool-icons `("code-sync.png"))
 (define primary-file "tool.rkt")
 
 (define collection "code-sync")
