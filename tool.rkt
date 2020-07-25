@@ -10,9 +10,10 @@
          web-server/http)
 
 (provide tool@)
- 
 
-(define WS-URL (string->url "ws://localhost:8080/"))
+; This URL goes to a very simple websocket server hosted on Google Cloud Services
+; Theres a link to the repo in the README
+(define WS-URL (string->url "wss://drracket-code-sync.ue.r.appspot.com/"))
 
 
 (define RANDOM (make-pseudo-random-generator))
