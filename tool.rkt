@@ -43,7 +43,6 @@
     (export drracket:tool-exports^)
  
     ; note to self, mixins are ugly: maybe i can rewrite this as a class?
-    
     (define set-room-id-mixin
       (mixin (drracket:unit:frame<%>) ()
         (super-new)
@@ -59,16 +58,10 @@
                         (parent (get-button-panel))))
 
                 (define (queue-thread)
-                  ; bug, the queue is initialized waiting on the anonymous connection
-                  ; but that connection will never return anything!
-                  ; we want to reset the queue on reseting room ID
-                  ; possible solution is to move this logic into the button mixin
-                  ; we can technically access  delete insert and get end position if we are clever
                   (when (ws-conn? c)
                     (thread (λ () (clear-and-replace (sync (ws-recv-evt c)))))))
 
                 (define (clear-and-replace text)
-
                   (when (equal? 'yes (message-box "Incoming Code Sync"  
                                                    "Would you like to recieve the incoming code from a member of your connected room?\n WARNING: All current code in your editor will be overwritten!"
                                                    #f '(yes-no)))
@@ -78,7 +71,7 @@
                   (queue-thread))
 
                 (define btn
-                  (new switchable-button%
+                  (new switchable-button% 
                        (label "Set Room ID")
                        (callback (λ (button)
                                    (letrec [(code (generate-random-code))
@@ -106,8 +99,7 @@
                                                    "You are not currently connected to a Room. \nClick 'Set Room ID' to join/create a room first!"
                                                    #f '(caution ok)))))
                        (parent (get-button-panel))
-                       (bitmap sync-bitmap)))
-                  ]
+                       (bitmap sync-bitmap)))]
 
           
 
@@ -125,7 +117,8 @@
                   (cons id-text (remq id-text l))))
 
         (queue-thread))))
- 
+
+    
     (define id-bitmap
       (let* ((bmp (make-bitmap 16 16))
              (bdc (make-object bitmap-dc% bmp)))
@@ -151,32 +144,10 @@
         (send bdc draw-ellipse 6 6 8 8)
         (send bdc set-bitmap #f)
         bmp))
- 
-
-    ; (define ws-update
-    ;   (λ (cls)
-    ;     (class cls
-    ;       (inherit get-text
-    ;                insert
-    ;                delete
-    ;                get-end-position)
-
-    ;       (define (on-change)
-    ;         (ws-send! c (get-text)))
-          
-    ;       (define/augment (on-insert start len)
-    ;         (inner (void) on-insert start len)
-    ;         (on-change))
-    ;       (define/augment (on-delete start end)
-    ;         (inner (void) on-delete start end)
-    ;         (on-change))
-
-    ;       (super-new))))
 
     (define (phase1) (void))
     (define (phase2) (void))
 
-    ;(drracket:get/extend:extend-definitions-text ws-update)
     (drracket:get/extend:extend-unit-frame set-room-id-mixin)))
 
 
