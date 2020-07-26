@@ -3,11 +3,11 @@
 (require net/rfc6455)
 (require net/url)
 
-(define WS_URL (string->url "wss://drracket-code-sync.ue.r.appspot.com/"))
+;(define WS_URL (string->url "wss://drracket-code-sync.ue.r.appspot.com/"))
+(define WS_URL (string->url "ws://localhost:8080/"))
 
 (define (connect id)
   (ws-connect WS_URL #:headers `(,(header #"namespace" (string->bytes/utf-8 id)))))
-
 
 (define c (connect "banana"))
 (define (queue)
@@ -16,6 +16,6 @@
                   (queue))))))
 
 
-;(queue)
-(ws-send! c "This should just work, at least on the recieving end")
+(queue)
+;(ws-send! c "This should just work, at least on the recieving end")
 

@@ -15,23 +15,20 @@
 ; Theres a link to the repo in the README
 (define WS-URL (string->url "wss://drracket-code-sync.ue.r.appspot.com/"))
 
+; local server
+;(define WS-URL (string->url "ws://localhost:8080/"))
 
-;BUG:
-; code sync does nothing after first click
-; other editor still recieves code after room ID is reset
-; this suggests the the problem is not the second editor "losing connection"
-; therefore it isnt a recv problem, its a send problem
-; how do we make sure the send is always correct? reconnect on every send?
-; yet we know that on send, c is a connection otherwise we would display an error!
-; need to log the server to see how far the request really makes it
-; if it doesnt make it to the server, its a send problem and we should try to reconnect
-; if it does, that means its a recv error somehow
-; most likely its a server problem, messages arent being sent or are being cut off somehow.
-;
+
+
+; TODO:
+; fix set position/mline error, probably has to do with select-all in locked flow state
+; added a check, need to see if it works or not
+; remove all displaylns just in case that was a problem
+
+
 (define RANDOM (make-pseudo-random-generator))
 (define CODE-LEN 6)
 (define MAX-CODE-LEN 12)
-(define TIMEOUT 5)
 
 (define (generate-random-code)
   (apply string-append (build-list CODE-LEN (lambda (x) (random-helper (random 1 36 RANDOM))))))
@@ -51,8 +48,6 @@
 
 (define thd (thread (λ () (sync never-evt))))
 
-;use alarm event
-
 (define tool@
   (unit
     (import drracket:tool^)
@@ -63,7 +58,8 @@
       (mixin (drracket:unit:frame<%>) ()
         (super-new)
         (inherit get-button-panel
-                 get-definitions-text)
+                 get-definitions-text
+                 get-editor)
         (inherit register-toolbar-buttons)
 
         (define/augment (on-close)
@@ -79,12 +75,7 @@
                 ;then use alarm evt or sync timeout or sleep or something
                 (define (queue-thread)
                   (if (and (ws-conn? c) (not (ws-conn-closed? c)))
-                    
-                      ;might be a bug: c could be valid on the if check, but die sometime after the
-                      ;thread is called. sync will never run, so we never get the next definition
-                      ;(displayln "ok i removed it")
                       (set! thd (thread (λ () 
-                                          (displayln "starting thread")
                                           (clear-and-replace (sync (ws-recv-evt c #:payload-type 'text)))
                                           (queue-thread))))
                       
@@ -92,20 +83,28 @@
                       (send id-text set-label (string-append "Room ID: Disconnected"))))
 
                 (define (clear-and-replace text)
-                  
-                  (when 
-                             ;because of sync/timeout, text may be #f on timeout
-                             ;in which case we want to skip this and do nothing
-                             
-                            (equal? 'yes (message-box "Incoming Code Sync"  
-                                                       "Would you like to recieve the incoming code from a member of your connected room?\n WARNING: All current code in your editor will be overwritten!"
-                                                       #f '(yes-no)))
+                  (cond
+                    ; connection was closed/terminated
+                    [(ws-conn-closed? c)
+                     (message-box "Connection Closed"  
+                                  "Uh oh! The connection to your Room has been closed.\n Please reconnect with 'Set Room ID'."
+                                  #f '(caution ok))]
                     
-                            (and (not (eof-object? text))
-                                 (displayln "received valid text!")
-                                 (send (get-definitions-text) select-all)
-                                 (send (get-definitions-text) clear)
-                                 (send (get-definitions-text) insert text))))
+                    [(and
+                      (string? text)
+                      (equal? 'yes (message-box "Incoming Code Sync"  
+                                                "Would you like to recieve the incoming code from a member of your connected room?\n WARNING: All current code in your editor will be overwritten!"
+                                                #f '(yes-no))))
+                     (if (and (not (send (get-editor) locked-for-flow?))
+                              (not (send (get-editor) locked-for-write?)))
+                         (and (send (get-definitions-text) select-all)
+                              (send (get-definitions-text) insert text))
+                         (message-box "Editor Locked"  
+                                      "Oops! Your editor was locked to write/flow during the incoming sync. Please try syncing again."
+                                      #f '(caution ok)))]
+                    [else (void)]))
+
+                  
 
                 (define btn
                   (new switchable-button% 
@@ -120,10 +119,8 @@
                                                                     #:validate (λ (id) (and (>= (string-length id) CODE-LEN)
                                                                                             (<= (string-length id) MAX-CODE-LEN)))))]
                                      (and id
-                                          ;(displayln "close if theres a connection")
 
                                           ;(when (ws-conn? c) (thread (λ () (ws-close! c))))
-                                          ;(displayln "done")
                                           (set! c (connect id))
                                           (send id-text set-label (string-append "Room ID: " id))
                                           ;kill the current thread
@@ -140,9 +137,8 @@
                        (label "Sync Code")
                        (callback (λ (button)
                                    (if (and (ws-conn? c) (not (ws-conn-closed? c)))
-                                       (and
-                                        (displayln (send (get-definitions-text) get-text))
-                                        (ws-send! c (send (get-definitions-text) get-text)))
+                                       (ws-send! c (send (get-definitions-text) get-text))
+                                       ;might wanna add a timer that disables the button for a few seconds
                                        (message-box "No Connection"  
                                                     "You are not currently connected to a Room. \nClick 'Set Room ID' to join/create a room first!"
                                                     #f '(caution ok)))))
