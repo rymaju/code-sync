@@ -10,7 +10,7 @@
 
 - Any user in the room can broadcast code, and broadcast code will go to however many users are in a room.
 
-- There is no limit to the number of users in one room (besides the CPU load my WebSocket server)
+- There is no limit to the number of users in one room (besides the CPU load of my WebSocket server)
 
 - Perfect for quickly distibuting copies of your code.
 
