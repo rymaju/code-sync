@@ -2,6 +2,14 @@
 
 ## Fast Code Sharing for DrRacket
 
+### WARNING
+
+This project is very experimental.
+
+### What this is NOT (yet)
+
+A Live-Share plugin ala VSCode for DrRacket. Its kind of hard to get it to work right, keep things fast, and not break the server.
+
 ### Features
 
 - Join a "Room", allowing you to remotely send your code to all other users also connected to the room.
@@ -16,7 +24,7 @@
 
 ### About
 
-The plugin on the client side is just adding some new buttons to DrRacket, and using an existing WebSocket implementation to communicate with a backend WebSocket server.
+The plugin on the client side is just adding some new buttons to DrRacket, and using an existing WebSocket implementation to communicate with a backend WebSocket server. You can see all the code for the server [here](https://github.com/rymaju/code-sync-server).
 
 Why WebSockets? Because its easy and allows an arbitrary number of people to join the same "Room".
 
