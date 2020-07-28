@@ -2,6 +2,12 @@
 
 ## Fast Code Sharing for DrRacket
 
+### About
+
+This is a DrRacket plugin that allows users to join a "Room" using WebSockets, and then broadcast the current code in their active DrRacket tab to all users in a Room. Users in a room will recieve a message asking if they want to override their code with the incoming code.
+
+The WebSocket server is a super simple node server hosted on Google Cloud Services, see the source for the server [here](https://github.com/rymaju/code-sync-server/blob/master/app.js).
+
 ### WARNING
 
 This project isn't paticularly complex, but it does have some issues. Heres some things that will definitely break the plugin:
@@ -11,6 +17,7 @@ This project isn't paticularly complex, but it does have some issues. Heres some
 - Really, sending anything that isnt just regular text
 - Silently disconnecting (fix coming soon)
 - Violently disconnecting (thats kind of on you though)
+- Occasionally the editor will simply be "locked for write" or "locked for flow" when receiving the code. This will cause the sync to fail, and an error message will be displayed. The broadcaster will have to send the code again (fix coming soon)
 
 The master branch is the most recent "stable" version of code-sync whose limitations I describe above. The next version is in the "development" branch, and will hopefully be much cleaner than this mess.
 
@@ -43,7 +50,6 @@ Why WebSockets? Because its easy and allows an arbitrary number of people to joi
 
 Suggestions and new issues are welcomed. Contributions and clean PR's are greatly welcomed.
 
-
 ### TODO
 
 So many things.
@@ -52,6 +58,6 @@ For one, we could make this a live-share type app. Honestly, sounds kind of like
 
 Another much better idea: have a git-like implementation where you can push/pull from a source. Can do this manually with a server, but probably much smart to hook this up to GitHub somehow. Maybe creating/loading gists if possible. This would require some work to get integration to work properly.
 
-In the meantime, a proof of concept can be done. Probablly wanna do it in another repo and another plugin forked from this. All we need is a MongoDB/Redis sitution to store the code in each room. 
+In the meantime, a proof of concept can be done. Probablly wanna do it in another repo and another plugin forked from this. All we need is a MongoDB/Redis sitution to store the code in each room.
 
-Another idea we can get rid of websockets in favor of regular http requests IF we dont care about realtime notifications of code being shared, but it might be cool to keep that in.
+Another idea we can get rid of WebSockets in favor of regular http requests IF we dont care about realtime notifications of code being shared, but it might be cool to keep that in.
