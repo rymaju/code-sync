@@ -134,7 +134,7 @@
               
                 (define btn2
                   (new switchable-button%
-                       (label "Sync Code")
+                       (label "Send Code")
                        (callback (λ (button)
                                    (if (and (ws-conn? c) (not (ws-conn-closed? c)))
                                        (ws-send! c (send (get-definitions-text) get-text))
