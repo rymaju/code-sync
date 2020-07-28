@@ -17,7 +17,7 @@ This project isn't paticularly complex, but it does have some issues. Heres some
 
 A Live-Share plugin ala VSCode for DrRacket. Its kind of hard to get it to work right, keep things fast, and not break the server.
 
-It is not integrated with git, or anything similar, even though it seems like it might be a good fit. You can only PUSH code to others, there is no way to ask to PULL code from a room (what does that even mean in a room with 3+ people?).
+It is not integrated with git, or anything similar, even though it seems like it might be a good fit. You can only PUSH code to others, **there is no way to ask to PULL code from a room (what does that even mean in a room with 3+ people?)**.
 
 Coming soon maybe: lecture/protected mode where only the first user of a room will be able to broadcast code.
 
