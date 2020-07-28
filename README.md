@@ -12,6 +12,8 @@ This project isn't paticularly complex, but it does have some issues. Heres some
 - Silently disconnecting (fix coming soon)
 - Violently disconnecting (thats kind of on you though)
 
+The master branch is the most recent "stable" version of code-sync whose limitations I describe above. The next version is in the "development" branch, and will hopefully be much cleaner than this mess.
+
 
 ### What this is NOT (yet)
 
