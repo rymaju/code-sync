@@ -4,11 +4,22 @@
 
 ### WARNING
 
-This project is very experimental.
+This project isn't paticularly complex, but it does have some issues. Heres some things that will definitely break the plugin:
+
+- Trying to send an image
+- Trying to send a box of any kind
+- Really, sending anything that isnt just regular text
+- Silently disconnecting (fix coming soon)
+- Violently disconnecting (thats kind of on you though)
+
 
 ### What this is NOT (yet)
 
 A Live-Share plugin ala VSCode for DrRacket. Its kind of hard to get it to work right, keep things fast, and not break the server.
+
+It is not integrated with git, or anything similar, even though it seems like it might be a good fit. You can only PUSH code to others, there is no way to ask to PULL code from a room (what does that even mean in a room with 3+ people?).
+
+Coming soon maybe: lecture/protected mode where only the first user of a room will be able to broadcast code.
 
 ### Features
 
@@ -29,3 +40,16 @@ The plugin on the client side is just adding some new buttons to DrRacket, and u
 Why WebSockets? Because its easy and allows an arbitrary number of people to join the same "Room".
 
 Suggestions and new issues are welcomed. Contributions and clean PR's are greatly welcomed.
+
+
+### TODO
+
+So many things.
+
+For one, we could make this a live-share type app. Honestly, sounds kind of like a bad idea though. For one, its hard to implement. Secondly, kind of breaks the idea of pair programming (driver, navgiator) by blurring the lines.
+
+Another much better idea: have a git-like implementation where you can push/pull from a source. Can do this manually with a server, but probably much smart to hook this up to GitHub somehow. Maybe creating/loading gists if possible. This would require some work to get integration to work properly.
+
+In the meantime, a proof of concept can be done. Probablly wanna do it in another repo and another plugin forked from this. All we need is a MongoDB/Redis sitution to store the code in each room. 
+
+Another idea we can get rid of websockets in favor of regular http requests IF we dont care about realtime notifications of code being shared, but it might be cool to keep that in.
