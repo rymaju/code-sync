@@ -25,10 +25,18 @@
 ; added a check, need to see if it works or not
 ; remove all displaylns just in case that was a problem
 
+; images
+; and different modes maybe
+
+
+
 
 (define RANDOM (make-pseudo-random-generator))
 (define CODE-LEN 6)
 (define MAX-CODE-LEN 12)
+
+
+; use (string [List-of Char])
 
 (define (generate-random-code)
   (apply string-append (build-list CODE-LEN (lambda (x) (random-helper (random 1 36 RANDOM))))))
@@ -46,7 +54,9 @@
 
 (define c "Disconnected")
 
-(define thd (thread (λ () (sync never-evt))))
+;(define thd (thread (λ () (sync never-evt))))
+
+(define thd #f)
 
 (define tool@
   (unit
@@ -71,14 +81,12 @@
                        (parent (get-button-panel))))
 
 
-                ; make this take in a conncection conn
-                ;then use alarm evt or sync timeout or sleep or something
+               
                 (define (queue-thread)
                   (if (and (ws-conn? c) (not (ws-conn-closed? c)))
                       (set! thd (thread (λ () 
                                           (clear-and-replace (sync (ws-recv-evt c #:payload-type 'text)))
-                                          (queue-thread))))
-                      
+                                          (queue-thread))))     
                       ; consider killing the thread here and replacing it with a never evt thread
                       (send id-text set-label (string-append "Room ID: Disconnected"))))
 
@@ -95,17 +103,14 @@
                       (equal? 'yes (message-box "Incoming Code Sync"  
                                                 "Would you like to recieve the incoming code from a member of your connected room?\n WARNING: All current code in your editor will be overwritten!"
                                                 #f '(yes-no))))
-                     (if (and (not (send (get-editor) locked-for-flow?))
-                              (not (send (get-editor) locked-for-write?)))
-                         (and (send (get-definitions-text) select-all)
-                              (send (get-definitions-text) insert text))
+                     (if (or (send (get-editor) locked-for-flow?)
+                             (send (get-editor) locked-for-write?))
+                         (begin (send (get-definitions-text) select-all)
+                                (send (get-definitions-text) insert text))
                          (message-box "Editor Locked"  
                                       "Oops! Your editor was locked to write/flow during the incoming sync. Please try syncing again."
-                                      #f '(caution ok)))]
-                    [else (void)]))
-
-                  
-
+                                      #f '(caution ok)))]))
+                
                 (define btn
                   (new switchable-button% 
                        (label "Set Room ID")
@@ -119,13 +124,12 @@
                                                                     #:validate (λ (id) (and (>= (string-length id) CODE-LEN)
                                                                                             (<= (string-length id) MAX-CODE-LEN)))))]
                                      (and id
-
                                           ;(when (ws-conn? c) (thread (λ () (ws-close! c))))
                                           (set! c (connect id))
                                           (send id-text set-label (string-append "Room ID: " id))
                                           ;kill the current thread
                                           ;restart it
-                                          (kill-thread thd)
+                                          (and thd (kill-thread thd))
                                           ;thd is set within queue-thread
                                           (queue-thread)))))
 
@@ -160,7 +164,8 @@
                 (λ (l)
                   (cons id-text (remq id-text l)))))))
 
-    
+    ;let*
+    ;better icons
     (define id-bitmap
       (let* ((bmp (make-bitmap 16 16))
              (bdc (make-object bitmap-dc% bmp)))
