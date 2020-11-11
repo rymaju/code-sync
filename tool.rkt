@@ -69,7 +69,8 @@
         (super-new)
         (inherit get-button-panel
                  get-definitions-text
-                 get-editor)
+                 get-editor
+                 get-canvas)
         (inherit register-toolbar-buttons)
 
         (define/augment (on-close)
@@ -83,14 +84,22 @@
 
                
                 (define (queue-thread)
+                  (println "queuing thread")
                   (if (and (ws-conn? c) (not (ws-conn-closed? c)))
-                      (set! thd (thread (λ () 
-                                          (clear-and-replace (sync (ws-recv-evt c #:payload-type 'text)))
-                                          (queue-thread))))     
+                      (and (println "setting thd!")
+                           (thread (λ ()
+                                     (println "in thunk, gonna recv data ohh man cant wait")
+                                     (clear-and-replace (ws-recv c #:payload-type 'text))
+                                     (queue-thread)))
+                           (println "ok, thread should be running"))     
                       ; consider killing the thread here and replacing it with a never evt thread
                       (send id-text set-label (string-append "Room ID: Disconnected"))))
 
                 (define (clear-and-replace text)
+                  
+                  (println "inside clear and replace")
+                  
+                  (send (get-canvas) enable #f)
                   (cond
                     ; connection was closed/terminated
                     [(ws-conn-closed? c)
@@ -103,13 +112,18 @@
                       (equal? 'yes (message-box "Incoming Code Sync"  
                                                 "Would you like to recieve the incoming code from a member of your connected room?\n WARNING: All current code in your editor will be overwritten!"
                                                 #f '(yes-no))))
-                     (if (or (send (get-editor) locked-for-flow?)
-                             (send (get-editor) locked-for-write?))
-                         (begin (send (get-definitions-text) select-all)
-                                (send (get-definitions-text) insert text))
-                         (message-box "Editor Locked"  
-                                      "Oops! Your editor was locked to write/flow during the incoming sync. Please try syncing again."
-                                      #f '(caution ok)))]))
+                     (with-handlers ([exn:fail? (lambda (exn)
+                                                  (and (displayln (exn-message exn))
+                                                       (and (message-box "Editor Locked"  
+                                                                         "Oops! Your editor was locked to write/flow during the incoming sync. Retrying..."
+                                                                         #f '(caution ok))
+                                                            (thread (λ () (sleep 1) (clear-and-replace text))))))])
+                       ;(or (send (get-editor) locked-for-flow?)
+                       ;    (send (get-editor) locked-for-write?))
+                       (begin (send (get-definitions-text) select-all)
+                              (send (get-definitions-text) insert text))
+                       )])
+                  (send (get-canvas) enable #t))
                 
                 (define btn
                   (new switchable-button% 
@@ -129,9 +143,12 @@
                                           (send id-text set-label (string-append "Room ID: " id))
                                           ;kill the current thread
                                           ;restart it
-                                          (and thd (kill-thread thd))
+                                          
                                           ;thd is set within queue-thread
-                                          (queue-thread)))))
+                                          (println "got here")
+                                          (queue-thread)
+                                          ;(and thd (kill-thread thd))
+                                          ))))
 
                        (parent (get-button-panel))
                        (bitmap id-bitmap)))
@@ -141,7 +158,9 @@
                        (label "Send Code")
                        (callback (λ (button)
                                    (if (and (ws-conn? c) (not (ws-conn-closed? c)))
-                                       (ws-send! c (send (get-definitions-text) get-text))
+                                       (equal? 'yes (message-box "Send code"  
+                                                "Are you sure you want to share your code will all other members of the room?"
+                                                #f '(yes-no)))
                                        ;might wanna add a timer that disables the button for a few seconds
                                        (message-box "No Connection"  
                                                     "You are not currently connected to a Room. \nClick 'Set Room ID' to join/create a room first!"
