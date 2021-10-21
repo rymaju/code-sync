@@ -1,6 +1,23 @@
+
+# ⚠️This project is archived indefinitely ⚠️
+
+
+---
+
+### A message from current me to past me...
+
+This was a cool but misguided project. Pair programming is best with _one_ keyboard. One driver. One navigator. This plugin would just encourage bad habits. 
+
+Also, why in the world were you sending the entire file over websockets? Very questionable.
+
+With that said, I'll pass it off to past me. Keep in mind everything below was written by a bored second semester CS student who could not write good code to save his life.
+
+---
+
 # code-sync
 
 ## Fast Code Sharing for DrRacket
+
 
 ### About
 
